@@ -4,8 +4,8 @@ import React from 'react'
 export const Latest = () => {
   return (
     <div className='w-[100%] mt-8 flex justify-center'>
-        <div className='lg:w-[60%] w-[95%] lg:h-[70vh] flex lg:flex-row flex-col'>
-            <div className='lg:w-[50%] w-[100%]'>
+        <div className='lg:w-[60%] w-[95%] lg:h-[70vh]  flex lg:flex-row flex-col'>
+            <div className='lg:w-[50%] w-[100%] h-[50vh] flex justify-center'>
                 <img className='h-[100%]' src="p1.jpg" alt="" />
             </div>
             <div className='lg:w-[50%] w-[100%]'>
