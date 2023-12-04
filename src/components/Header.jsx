@@ -4,7 +4,7 @@ export const Header = () => {
   return (
     <div className='w-[100%] flex justify-center items-center pt-4 pb-4 bg-[#2C332F] text-white'>
         <div className='w-[80%] flex justify-between items-center'>
-            <div>
+            <div className='lg:hidden'>
                 ---
             </div>
             <div className='text-6xl lg:w-[25%] flex flex-start'>
