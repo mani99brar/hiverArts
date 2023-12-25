@@ -1,7 +1,9 @@
 import Image from 'next/image'
 import React from 'react'
+import Link from 'next/link';
 
 export const Latest = () => {
+    const paintingId = '2';
   return (
     <div className='w-[100%] mt-8 flex justify-center'>
         <div className='lg:w-[60%] w-[95%] lg:h-[70vh]  flex lg:flex-row flex-col'>
@@ -15,7 +17,7 @@ export const Latest = () => {
                 </div>
                 <button className='border-2 w-[100%] p-2 mt-4'>Add to cart</button>
                 <p className='mt-8 mb-6'>The Mona Lisa, painted by Leonardo da Vinci, captivates with her enigmatic smile, transcending time as an iconic masterpiece of art.</p>
-                <a href="" className='underline underline-offset-4'>View full details</a>
+                <Link href={`/${paintingId}`} className='underline underline-offset-4'>View full details</Link>
             </div>
         </div>
         

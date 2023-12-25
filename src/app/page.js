@@ -6,7 +6,7 @@ import { Prints } from '@/components/Prints'
 import {Footer} from '@/components/Footer'
 
 export default function Home() {
-  return (
+ return (
     <>
       <Header />
       <Slider />
