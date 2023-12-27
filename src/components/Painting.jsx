@@ -1,12 +1,58 @@
 "use client";
 import Image from 'next/image'
 import React, { useState,useRef,useEffect } from 'react';
+import axios from 'axios';
+
+export const Painting = ({paintingId}) => {
+  const [painting, setPainting] = useState(null);
+  const fetchPainting = async () => {
+    try {
+      const response = await axios.post('http://localhost:3000/get-painting', { paintingId });
+      setPainting(response.data); // Update state with the painting data
+      console.log(painting);
+    } catch (error) {
+      console.error('Error fetching painting:', error);
+      // Handle errors, such as showing an alert or updating the UI
+    }
+  };
 
 
-export const Painting = () => {
-    const paintingId = '2';
+  const [cart, setCart] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedCart = localStorage.getItem('cart');
+      return savedCart ? JSON.parse(savedCart) : [];
+    }
+    return [];
+  });
+
+  // Update local storage when the cart changes
+  useEffect(() => {
+    localStorage.setItem('cart', JSON.stringify(cart));
+    fetchPainting();
+    // console.log(cart);
+  }, [cart]);
+
+  const addToCart = (newItem) => {
+    setCart((prevCart) => {
+      // Check if the item is already in the cart
+      const existingItemIndex = prevCart.findIndex(item => item.id === newItem.id);
+
+      // If item is found, update quantity
+      if (existingItemIndex > -1) {
+        const updatedCart = [...prevCart];
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          quantity: updatedCart[existingItemIndex].quantity + (newItem.quantity || 1),
+        };
+        return updatedCart;
+      } else {
+        // Item not in cart, add as new item
+        return [...prevCart, newItem];
+      }
+    });
+  };
     // State to keep track of the selected size
-  const [selectedSize, setSelectedSize] = useState('21cm x 30cm, 8.3inches x 11.7inches');
+  const [selectedSize, setSelectedSize] = useState('medium');
   const [selectedFrame, setSelectedFrame] = useState('Print');
   const [quantity, setQuantity] = useState(1); // Start with a default quantity of 1
 
@@ -20,8 +66,6 @@ export const Painting = () => {
       // Calculate the height of the second div
       const secondDivHeight = secondDivRef.current.offsetHeight;
       // Apply the height of the second div to the first div
-      console.log(secondDivHeight);
-      console.log(firstDivRef.current.offsetHeight);
       firstDivRef.current.style.height = `${secondDivHeight}px`;
     }
   }, [selectedSize, selectedFrame, quantity]);
@@ -40,18 +84,26 @@ export const Painting = () => {
   };
   // Function to update the selected size
   const handleSizeChange = (size) => {
+    console.log(size);
     setSelectedSize(size);
   };
   const handleFrameChange = (frame) => {
     setSelectedFrame(frame);
   } 
 
-  
+  const handleAddToCart = () => {
+    addToCart({
+      id: paintingId,
+      size: selectedSize,
+      frame: selectedFrame,
+      quantity,
+    });
+  };
 
-
+ 
 
   return (
-    <div className='w-[100%] h-[100vh] flex justify-center mt-8 mb-8'>
+    painting&&(<div className='w-[100%] h-[100vh] flex justify-center mt-8 mb-8'>
         <div className='lg:w-[70%] w-[95%] flex lg:flex-row flex-col lg:justify-between'>
             <div ref={firstDivRef} className='lg:w-[48%] w-[100%] relative no-scrollbar overflow-scroll flex flex-col items-center justify-center'>
                 <div className='flex flex-col items-center top-0 absolute justify-center'>
@@ -68,31 +120,41 @@ export const Painting = () => {
                 
             </div>
             <div ref={secondDivRef} className='lg:w-[48%] flex flex-col justify-between h-[min] w-[100%]mb-8'>
-                <h1 className='text-6xl mb-8'>Mona Lisa</h1>
+                <h1 className='text-6xl mb-8'>{painting.name}</h1>
                 <div className='flex items-center lg:mt-0 mt-4'>
-                    <p className='mr-2 text-xl'>Rs. 1000</p>
+                    <p className='mr-2 text-xl'>Rs. {painting.price}</p>
                     <p className='bg-black text-white p-2 rounded-md'>Exclusive</p>
                 </div>
                 <div>
                 <p className='text-xl mt-4'>Size</p>
-                <button className={`p-4 rounded-md border-2 ${selectedSize === '21cm x 30cm, 8.3inches x 11.7inches' ? 'bg-black text-white' : 'bg-white'}`}
-                onClick={() => handleSizeChange('21cm x 30cm, 8.3inches x 11.7inches')}
-                >
-                    21cm x 30cm, 8.3inches x 11.7inches
-                </button>
-
-                <button className={`p-4 rounded-md border-2 ${selectedSize === '30cm x 42cm, 11.7inches x 16.5inches' ? 'bg-black text-white' : 'bg-white'}`}
-                onClick={() => handleSizeChange('30cm x 42cm, 11.7inches x 16.5inches')}
-                >
-                    30cm x 42cm, 11.7inches x 16.5inches
-                </button>
-
+                 {painting.availableSizes.map((size, index) => (
+                  <button key={index} className={`p-4 rounded-md border-2 ${selectedSize === size ? 'bg-black text-white' : 'bg-white'}`}
+                  onClick={() => handleSizeChange(size)}
+                  >
+                      {size}
+                  </button>
+                  ))}
                 </div>
                 <div>
                 <p className='text-xl mt-4'>Frame</p>
-                <button className={`p-4 rounded-md border-2 ${selectedFrame === 'Print' ? 'bg-black text-white' : 'bg-white'}`} onClick={() => handleFrameChange('Print')}>Print</button>
-                <button className={`p-4 rounded-md border-2 ${selectedFrame === 'Original' ? 'bg-black text-white' : 'bg-white'}`} onClick={() => handleFrameChange('Original')} >Original</button>
+                
+                {painting.isPrint && (
+                  <button
+                    className={`p-4 rounded-md border-2 ${selectedFrame === 'Print' ? 'bg-black text-white' : 'bg-white'}`}
+                    onClick={() => handleFrameChange('Print')}
+                  >
+                    Print
+                  </button>
+                )}
 
+                {painting.isOriginal && (
+                  <button
+                    className={`p-4 rounded-md border-2 ${selectedFrame === 'Original' ? 'bg-black text-white' : 'bg-white'}`}
+                    onClick={() => handleFrameChange('Original')}
+                  >
+                    Original
+                  </button>
+                )}
                 </div>
 
                 <div className='w-[50%]'>
@@ -110,12 +172,12 @@ export const Painting = () => {
       </div>
                 </div>
 
-                <button className='border-2 w-[100%] p-2 mt-4'>Add to cart</button>
+                <button onClick={handleAddToCart} className='border-2 w-[100%] p-2 mt-4'>Add to cart</button>
                 <p className='mt-8 mb-6'>The Mona Lisa, painted by Leonardo da Vinci, captivates with her enigmatic smile, transcending time as an iconic masterpiece of art.</p>
                 {/* <Link href={`/${paintingId}`} className='underline underline-offset-4'>View full details</Link> */}
             </div>
         </div>
         
-    </div>
+    </div>)
   )
 }
